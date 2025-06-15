@@ -1,9 +1,13 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { Layout } from "./components/Layout";
+import { TicketList } from "./pages/TicketList";
+import { NewTicket } from "./pages/NewTicket";
+import { TicketDetail } from "./pages/TicketDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -14,11 +18,18 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<TicketList />} />
+            <Route path="/nouveau-ticket" element={<NewTicket />} />
+            <Route path="/ticket/:id" element={<TicketDetail />} />
+            <Route path="/pannes" element={<TicketList />} />
+            <Route path="/equipements" element={<TicketList />} />
+            <Route path="/statistiques" element={<div>Statistiques à venir</div>} />
+            <Route path="/parametres" element={<div>Paramètres à venir</div>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Layout>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
