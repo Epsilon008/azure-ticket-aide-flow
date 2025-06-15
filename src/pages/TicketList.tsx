@@ -1,63 +1,51 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { TicketCard } from '@/components/TicketCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Ticket } from '@/types/ticket';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, Plus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-// Données de test
-const mockTickets: Ticket[] = [
-  {
-    id: '1',
-    title: 'Ordinateur ne démarre plus',
-    description: 'Le PC portable de bureau ne s\'allume plus depuis ce matin',
-    type: 'panne',
-    status: 'nouveau',
-    priority: 'haute',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-01-15T10:30:00Z',
-    assignedTo: 'Jean Dupont'
-  },
-  {
-    id: '2',
-    title: 'Demande nouvel écran',
-    description: 'Besoin d\'un second écran pour améliorer la productivité',
-    type: 'equipement',
-    status: 'en-cours',
-    priority: 'normale',
-    createdAt: '2024-01-14T14:20:00Z',
-    updatedAt: '2024-01-15T09:15:00Z',
-    equipment: {
-      equipmentType: 'Écran 24 pouces',
-      quantity: 1,
-      urgency: 'normale',
-      justification: 'Travail sur plusieurs applications simultanément'
-    }
-  }
-];
+import { useTickets } from '@/hooks/useTickets';
 
 export const TicketList = () => {
   const navigate = useNavigate();
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-    const matchesType = typeFilter === 'all' || ticket.type === typeFilter;
-    
-    return matchesSearch && matchesStatus && matchesType;
+  const { data: ticketsResponse, isLoading, error } = useTickets({
+    status: statusFilter,
+    type: typeFilter,
+    search: searchTerm,
   });
+
+  const tickets = ticketsResponse?.data || [];
 
   const handleTicketClick = (ticketId: string) => {
     navigate(`/ticket/${ticketId}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Chargement des tickets...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 text-lg">Erreur lors du chargement des tickets</p>
+        <p className="text-gray-400 text-sm mt-2">
+          Vérifiez que le serveur backend est démarré
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -112,7 +100,7 @@ export const TicketList = () => {
 
       {/* Liste des tickets */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTickets.map((ticket) => (
+        {tickets.map((ticket: Ticket) => (
           <TicketCard
             key={ticket.id}
             ticket={ticket}
@@ -121,11 +109,14 @@ export const TicketList = () => {
         ))}
       </div>
 
-      {filteredTickets.length === 0 && (
+      {tickets.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Aucun ticket trouvé</p>
           <p className="text-gray-400 text-sm mt-2">
-            Essayez de modifier vos critères de recherche
+            {searchTerm || statusFilter !== 'all' || typeFilter !== 'all' 
+              ? 'Essayez de modifier vos critères de recherche'
+              : 'Créez votre premier ticket'
+            }
           </p>
         </div>
       )}

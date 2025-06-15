@@ -13,7 +13,7 @@ interface AISolutionsProps {
   loading?: boolean;
 }
 
-export const AISolutions = ({ ticketDescription, solutions, onGenerateSolutions, loading }: AISolutionsProps) => {
+export const AISolutions = ({ ticketDescription, solutions = [], onGenerateSolutions, loading }: AISolutionsProps) => {
   const [selectedSolution, setSelectedSolution] = useState<string | null>(null);
 
   const getConfidenceColor = (confidence: number) => {
@@ -54,7 +54,7 @@ export const AISolutions = ({ ticketDescription, solutions, onGenerateSolutions,
       </CardHeader>
       
       <CardContent>
-        {!solutions || solutions.length === 0 ? (
+        {solutions.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Brain className="h-12 w-12 mx-auto mb-4 text-gray-300" />
             <p>Aucune solution générée pour le moment.</p>
@@ -64,7 +64,7 @@ export const AISolutions = ({ ticketDescription, solutions, onGenerateSolutions,
           <div className="space-y-4">
             {solutions.map((solution) => (
               <Card 
-                key={solution.id} 
+                key={solution.id}
                 className={`cursor-pointer transition-all ${
                   selectedSolution === solution.id ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-md'
                 }`}

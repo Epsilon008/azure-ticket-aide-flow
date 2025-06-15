@@ -1,88 +1,53 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AISolutions } from '@/components/AISolutions';
-import { Ticket, AISolution } from '@/types/ticket';
-import { ArrowLeft, Edit, Clock, User, AlertTriangle, Wrench } from 'lucide-react';
+import { ArrowLeft, Edit, Clock, User, AlertTriangle, Wrench, Loader2 } from 'lucide-react';
+import { useTicket, useGenerateAISolutions } from '@/hooks/useTickets';
 
 export const TicketDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [solutions, setSolutions] = useState<AISolution[]>([]);
-  const [loadingSolutions, setLoadingSolutions] = useState(false);
+  
+  const { data: ticketResponse, isLoading, error } = useTicket(id!);
+  const generateSolutionsMutation = useGenerateAISolutions();
+  
+  const ticket = ticketResponse?.data;
 
-  useEffect(() => {
-    // Simuler le chargement du ticket
-    const mockTicket: Ticket = {
-      id: id || '1',
-      title: 'Ordinateur ne démarre plus',
-      description: 'Le PC portable de bureau ne s\'allume plus depuis ce matin. J\'ai essayé de le brancher mais rien ne se passe. Le voyant d\'alimentation ne s\'allume même pas.',
-      type: 'panne',
-      status: 'nouveau',
-      priority: 'haute',
-      createdAt: '2024-01-15T10:30:00Z',
-      updatedAt: '2024-01-15T10:30:00Z',
-      assignedTo: 'Jean Dupont'
-    };
-    setTicket(mockTicket);
-  }, [id]);
-
-  const generateSolutions = async () => {
-    setLoadingSolutions(true);
-    
-    // Simuler l'appel à l'IA
-    setTimeout(() => {
-      const mockSolutions: AISolution[] = [
-        {
-          id: '1',
-          solution: 'Vérifier l\'alimentation et les câbles',
-          confidence: 85,
-          estimatedTime: '5-10 minutes',
-          steps: [
-            'Vérifier que le câble d\'alimentation est bien branché',
-            'Tester le câble d\'alimentation avec un autre appareil',
-            'Vérifier que la prise électrique fonctionne',
-            'Essayer de brancher sur une autre prise'
-          ]
-        },
-        {
-          id: '2',
-          solution: 'Reset de la batterie',
-          confidence: 72,
-          estimatedTime: '15-20 minutes',
-          steps: [
-            'Débrancher le câble d\'alimentation',
-            'Retirer la batterie si possible',
-            'Maintenir le bouton power pendant 30 secondes',
-            'Remettre la batterie et rebrancher l\'alimentation',
-            'Essayer de démarrer l\'ordinateur'
-          ]
-        },
-        {
-          id: '3',
-          solution: 'Vérification des composants internes',
-          confidence: 60,
-          estimatedTime: '30-45 minutes',
-          steps: [
-            'Ouvrir le boîtier de l\'ordinateur',
-            'Vérifier que tous les câbles internes sont bien connectés',
-            'Vérifier l\'état de la RAM',
-            'Tester avec une seule barrette de RAM si plusieurs présentes'
-          ]
-        }
-      ];
-      
-      setSolutions(mockSolutions);
-      setLoadingSolutions(false);
-    }, 2000);
+  const handleGenerateSolutions = async () => {
+    if (id) {
+      generateSolutionsMutation.mutate(id);
+    }
   };
 
-  if (!ticket) {
-    return <div>Chargement...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Chargement du ticket...</span>
+      </div>
+    );
+  }
+
+  if (error || !ticket) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 text-lg">Erreur lors du chargement du ticket</p>
+        <p className="text-gray-400 text-sm mt-2">
+          Le ticket demandé n'existe pas ou le serveur est indisponible
+        </p>
+        <Button 
+          onClick={() => navigate('/')}
+          className="mt-4"
+          variant="outline"
+        >
+          Retour à la liste
+        </Button>
+      </div>
+    );
   }
 
   const getStatusColor = (status: string) => {
@@ -179,9 +144,9 @@ export const TicketDetail = () => {
           {ticket.type === 'panne' && (
             <AISolutions
               ticketDescription={ticket.description}
-              solutions={solutions}
-              onGenerateSolutions={generateSolutions}
-              loading={loadingSolutions}
+              solutions={ticket.solutions || []}
+              onGenerateSolutions={handleGenerateSolutions}
+              loading={generateSolutionsMutation.isPending}
             />
           )}
         </div>
