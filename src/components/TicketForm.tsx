@@ -8,9 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TicketFormData } from '@/types/ticket';
 import { useToast } from '@/hooks/use-toast';
-import { AISolutions } from '@/components/AISolutions';
-import { api } from '@/services/api';
-import { Eye, List } from 'lucide-react';
+import { List } from 'lucide-react';
 
 interface TicketFormProps {
   onSubmit: (ticket: TicketFormData) => void;
@@ -45,9 +43,6 @@ export const TicketForm = ({ onSubmit, initialData }: TicketFormProps) => {
 
   const [selectedProblem, setSelectedProblem] = useState<string>('');
   const [customTitle, setCustomTitle] = useState<string>('');
-  const [showAIPreview, setShowAIPreview] = useState(false);
-  const [aiSolutions, setAiSolutions] = useState([]);
-  const [loadingAI, setLoadingAI] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,36 +78,6 @@ export const TicketForm = ({ onSubmit, initialData }: TicketFormProps) => {
     setCustomTitle(value);
     if (selectedProblem === 'Autre (saisir manuellement)') {
       setFormData(prev => ({ ...prev, title: value }));
-    }
-  };
-
-  const handlePreviewSolutions = async () => {
-    if (!formData.description.trim()) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez saisir une description pour générer des solutions",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoadingAI(true);
-    try {
-      const response = await api.ai.previewSolutions(formData.description, formData.title);
-      if (response.success) {
-        setAiSolutions(response.data.solutions);
-        setShowAIPreview(true);
-      } else {
-        throw new Error(response.message);
-      }
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Erreur lors de la génération des solutions",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingAI(false);
     }
   };
 
@@ -266,21 +231,6 @@ export const TicketForm = ({ onSubmit, initialData }: TicketFormProps) => {
               </Card>
             )}
 
-            {formData.type === 'panne' && formData.description && (
-              <div className="flex justify-center">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handlePreviewSolutions}
-                  disabled={loadingAI}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Prévisualiser les solutions IA
-                </Button>
-              </div>
-            )}
-
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline">
                 Annuler
@@ -292,15 +242,6 @@ export const TicketForm = ({ onSubmit, initialData }: TicketFormProps) => {
           </form>
         </CardContent>
       </Card>
-
-      {showAIPreview && formData.type === 'panne' && (
-        <AISolutions
-          ticketDescription={formData.description}
-          solutions={aiSolutions}
-          onGenerateSolutions={handlePreviewSolutions}
-          loading={loadingAI}
-        />
-      )}
     </div>
   );
 };

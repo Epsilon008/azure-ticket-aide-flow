@@ -102,9 +102,9 @@ export const TicketList = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tickets.map((ticket: Ticket) => (
           <TicketCard
-            key={ticket.id}
+            key={ticket._id || ticket.id}
             ticket={ticket}
-            onClick={() => handleTicketClick(ticket.id)}
+            onClick={() => handleTicketClick(ticket._id || ticket.id)}
           />
         ))}
       </div>
