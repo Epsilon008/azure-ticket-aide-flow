@@ -8,6 +8,7 @@ import { Layout } from "./components/Layout";
 import { TicketList } from "./pages/TicketList";
 import { NewTicket } from "./pages/NewTicket";
 import { TicketDetail } from "./pages/TicketDetail";
+import { HistoryTickets } from "./pages/HistoryTickets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,7 +26,7 @@ const App = () => (
             <Route path="/ticket/:id" element={<TicketDetail />} />
             <Route path="/pannes" element={<TicketList />} />
             <Route path="/equipements" element={<TicketList />} />
-            <Route path="/statistiques" element={<div>Statistiques à venir</div>} />
+            <Route path="/historique" element={<HistoryTickets />} />
             <Route path="/parametres" element={<div>Paramètres à venir</div>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

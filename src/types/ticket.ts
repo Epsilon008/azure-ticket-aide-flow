@@ -1,6 +1,7 @@
 
 export interface Ticket {
   id: string;
+  _id?: string; // Pour la compatibilité avec MongoDB
   title: string;
   description: string;
   type: 'panne' | 'equipement';

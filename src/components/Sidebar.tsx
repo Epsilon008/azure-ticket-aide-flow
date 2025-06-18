@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Ticket, Plus, Settings, BarChart3, Wrench, AlertTriangle } from 'lucide-react';
+import { Ticket, Plus, Settings, History, Wrench, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigationItems = [
@@ -26,9 +26,9 @@ const navigationItems = [
     icon: Wrench,
   },
   {
-    title: 'Statistiques',
-    href: '/statistiques',
-    icon: BarChart3,
+    title: 'Historique',
+    href: '/historique',
+    icon: History,
   },
   {
     title: 'Paramètres',
