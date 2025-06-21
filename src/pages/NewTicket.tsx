@@ -13,16 +13,12 @@ export const NewTicket = () => {
   const generateSolutionsMutation = useGenerateAISolutions();
 
   const handleSubmit = async (ticketData: TicketFormData) => {
-    console.log('Attempting to create ticket:', ticketData);
-    
     try {
       // Créer le ticket
       const response = await createTicketMutation.mutateAsync(ticketData);
-      console.log('Ticket creation response:', response);
       
       if (response.success && response.data) {
         const ticketId = response.data._id || response.data.id;
-        console.log('Ticket created with ID:', ticketId);
         
         // Si c'est un ticket de panne, générer automatiquement les solutions IA
         if (ticketData.type === 'panne') {
@@ -40,34 +36,16 @@ export const NewTicket = () => {
               variant: "destructive",
             });
           }
-        } else {
-          toast({
-            title: "Succès", 
-            description: "Ticket créé avec succès",
-          });
         }
         
         // Rediriger vers le détail du ticket
         navigate(`/ticket/${ticketId}`);
-      } else {
-        throw new Error('Réponse invalide du serveur');
       }
     } catch (error) {
       console.error('Erreur lors de la création du ticket:', error);
-      
-      // Message d'erreur plus détaillé selon le type d'erreur
-      let errorMessage = "Erreur lors de la création du ticket";
-      if (error instanceof Error) {
-        if (error.message.includes('Failed to fetch')) {
-          errorMessage = "Impossible de contacter le serveur. Vérifiez que le serveur backend est démarré sur le port 5000.";
-        } else {
-          errorMessage = `Erreur: ${error.message}`;
-        }
-      }
-      
       toast({
         title: "Erreur",
-        description: errorMessage,
+        description: "Erreur lors de la création du ticket",
         variant: "destructive",
       });
     }
