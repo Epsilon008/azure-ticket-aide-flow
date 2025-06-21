@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stockApi } from '@/services/stockApi';
 import { useToast } from '@/hooks/use-toast';
@@ -7,7 +6,17 @@ import { useToast } from '@/hooks/use-toast';
 export const useDashboardStats = () => {
   return useQuery({
     queryKey: ['dashboard-stats'],
-    queryFn: () => stockApi.dashboard.getStats(),
+    queryFn: async () => {
+      console.log('🔍 Tentative de récupération des stats dashboard...');
+      try {
+        const result = await stockApi.dashboard.getStats();
+        console.log('✅ Stats dashboard récupérées:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Erreur lors de la récupération des stats:', error);
+        throw error;
+      }
+    },
   });
 };
 
@@ -15,7 +24,17 @@ export const useDashboardStats = () => {
 export const useEmployees = () => {
   return useQuery({
     queryKey: ['employees'],
-    queryFn: () => stockApi.employees.getAll(),
+    queryFn: async () => {
+      console.log('🔍 Tentative de récupération des employés...');
+      try {
+        const result = await stockApi.employees.getAll();
+        console.log('✅ Employés récupérés:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Erreur lors de la récupération des employés:', error);
+        throw error;
+      }
+    },
   });
 };
 
@@ -93,7 +112,17 @@ export const useDeleteEmployee = () => {
 export const useEquipments = (filters?: any) => {
   return useQuery({
     queryKey: ['equipments', filters],
-    queryFn: () => stockApi.stock.getEquipments(filters),
+    queryFn: async () => {
+      console.log('🔍 Tentative de récupération des équipements...');
+      try {
+        const result = await stockApi.stock.getEquipments(filters);
+        console.log('✅ Équipements récupérés:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Erreur lors de la récupération des équipements:', error);
+        throw error;
+      }
+    },
   });
 };
 
@@ -125,7 +154,17 @@ export const useCreateEquipment = () => {
 export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
-    queryFn: () => stockApi.stock.getCategories(),
+    queryFn: async () => {
+      console.log('🔍 Tentative de récupération des catégories...');
+      try {
+        const result = await stockApi.stock.getCategories();
+        console.log('✅ Catégories récupérées:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Erreur lors de la récupération des catégories:', error);
+        throw error;
+      }
+    },
   });
 };
 
@@ -156,7 +195,17 @@ export const useCreateCategory = () => {
 export const useAssignmentHistory = () => {
   return useQuery({
     queryKey: ['assignment-history'],
-    queryFn: () => stockApi.stock.getAssignmentHistory(),
+    queryFn: async () => {
+      console.log('🔍 Tentative de récupération de l\'historique...');
+      try {
+        const result = await stockApi.stock.getAssignmentHistory();
+        console.log('✅ Historique récupéré:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Erreur lors de la récupération de l\'historique:', error);
+        throw error;
+      }
+    },
   });
 };
 
