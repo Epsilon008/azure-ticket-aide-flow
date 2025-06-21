@@ -26,46 +26,15 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
   const { isAuthenticated, isAdmin } = useAuth();
   
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/stock/dashboard" replace />;
   }
   
   if (adminOnly && !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/stock/dashboard" replace />;
   }
   
   return <>{children}</>;
 };
-
-// Composant pour rediriger après connexion
-const AuthRedirect = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  // Rediriger selon le rôle
-  if (isAdmin) {
-    return <Navigate to="/stock/dashboard" replace />;
-  } else {
-    return <Navigate to="/" replace />;
-  }
-};
-
-// Routes publiques (module tickets)
-const PublicRoutes = () => (
-  <Layout>
-    <Routes>
-      <Route path="/" element={<TicketList />} />
-      <Route path="/nouveau-ticket" element={<NewTicket />} />
-      <Route path="/ticket/:id" element={<TicketDetail />} />
-      <Route path="/pannes" element={<TicketList />} />
-      <Route path="/equipements" element={<TicketList />} />
-      <Route path="/historique" element={<HistoryTickets />} />
-      <Route path="/parametres" element={<div>Paramètres à venir</div>} />
-    </Routes>
-  </Layout>
-);
 
 // Routes admin (module stock)
 const AdminRoutes = () => (
@@ -80,27 +49,29 @@ const AdminRoutes = () => (
   </StockLayout>
 );
 
-const AppContent = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+// Routes publiques (module tickets)
+const PublicRoutes = () => (
+  <Layout>
+    <Routes>
+      <Route path="/tickets" element={<TicketList />} />
+      <Route path="/nouveau-ticket" element={<NewTicket />} />
+      <Route path="/ticket/:id" element={<TicketDetail />} />
+      <Route path="/pannes" element={<TicketList />} />
+      <Route path="/equipements" element={<TicketList />} />
+      <Route path="/historique" element={<HistoryTickets />} />
+      <Route path="/parametres" element={<div>Paramètres à venir</div>} />
+    </Routes>
+  </Layout>
+);
 
+const AppContent = () => {
   return (
     <Routes>
-      {/* Route de connexion */}
-      <Route 
-        path="/login" 
-        element={
-          isAuthenticated ? (
-            <Navigate to={isAdmin ? "/stock/dashboard" : "/"} replace />
-          ) : (
-            <Login />
-          )
-        } 
-      />
+      {/* Redirection automatique vers le dashboard admin */}
+      <Route path="/" element={<Navigate to="/stock/dashboard" replace />} />
+      <Route path="/login" element={<Navigate to="/stock/dashboard" replace />} />
       
-      {/* Redirection après connexion */}
-      <Route path="/auth-redirect" element={<AuthRedirect />} />
-      
-      {/* Routes protégées pour les admins (module stock) */}
+      {/* Routes admin (module stock) */}
       <Route 
         path="/stock/*" 
         element={
@@ -110,9 +81,9 @@ const AppContent = () => {
         } 
       />
       
-      {/* Routes publiques protégées (module tickets) */}
+      {/* Routes publiques (module tickets) */}
       <Route 
-        path="/*" 
+        path="/tickets/*" 
         element={
           <ProtectedRoute>
             <PublicRoutes />
@@ -121,7 +92,7 @@ const AppContent = () => {
       />
       
       {/* Route 404 */}
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<Navigate to="/stock/dashboard" replace />} />
     </Routes>
   );
 };

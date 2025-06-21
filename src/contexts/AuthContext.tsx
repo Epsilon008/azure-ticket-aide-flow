@@ -24,17 +24,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    // Simuler un utilisateur admin connecté automatiquement
+    const mockAdminUser: User = {
+      id: '1',
+      username: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+      department: 'IT'
+    };
     
-    if (token && storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Erreur lors du parsing de l\'utilisateur:', error);
-        logout();
-      }
-    }
+    setUser(mockAdminUser);
+    localStorage.setItem('user', JSON.stringify(mockAdminUser));
+    localStorage.setItem('token', 'mock-admin-token');
   }, []);
 
   const logout = () => {
