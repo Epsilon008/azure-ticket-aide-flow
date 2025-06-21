@@ -22,10 +22,7 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ticket-system', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ticket-system')
 .then(() => console.log('✅ Connecté à MongoDB'))
 .catch((error) => console.error('❌ Erreur de connexion MongoDB:', error));
 
