@@ -9,6 +9,38 @@ export interface ApiResponse<T> {
   count?: number;
 }
 
+// Helper function to handle fetch errors
+const handleFetchError = async (response: Response) => {
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`API Error ${response.status}:`, errorText);
+    throw new Error(`HTTP ${response.status}: ${errorText}`);
+  }
+  return response;
+};
+
+// Helper function to make API calls with better error handling
+const apiCall = async (url: string, options?: RequestInit): Promise<any> => {
+  try {
+    console.log(`Making API call to: ${url}`, options);
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+    
+    await handleFetchError(response);
+    const data = await response.json();
+    console.log(`API response from ${url}:`, data);
+    return data;
+  } catch (error) {
+    console.error(`API call failed for ${url}:`, error);
+    throw error;
+  }
+};
+
 export const api = {
   // Tickets endpoints
   tickets: {
@@ -24,63 +56,47 @@ export const api = {
       if (filters?.priority && filters.priority !== 'all') params.append('priority', filters.priority);
       if (filters?.search) params.append('search', filters.search);
 
-      const response = await fetch(`${API_BASE_URL}/tickets?${params}`);
-      return response.json();
+      return apiCall(`${API_BASE_URL}/tickets?${params}`);
     },
 
     getById: async (id: string): Promise<ApiResponse<any>> => {
-      const response = await fetch(`${API_BASE_URL}/tickets/${id}`);
-      return response.json();
+      return apiCall(`${API_BASE_URL}/tickets/${id}`);
     },
 
     create: async (ticketData: any): Promise<ApiResponse<any>> => {
-      const response = await fetch(`${API_BASE_URL}/tickets`, {
+      return apiCall(`${API_BASE_URL}/tickets`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(ticketData),
       });
-      return response.json();
     },
 
     update: async (id: string, ticketData: any): Promise<ApiResponse<any>> => {
-      const response = await fetch(`${API_BASE_URL}/tickets/${id}`, {
+      return apiCall(`${API_BASE_URL}/tickets/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(ticketData),
       });
-      return response.json();
     },
 
     delete: async (id: string): Promise<ApiResponse<any>> => {
-      const response = await fetch(`${API_BASE_URL}/tickets/${id}`, {
+      return apiCall(`${API_BASE_URL}/tickets/${id}`, {
         method: 'DELETE',
       });
-      return response.json();
     },
   },
 
   // AI endpoints
   ai: {
     generateSolutions: async (ticketId: string): Promise<ApiResponse<any>> => {
-      const response = await fetch(`${API_BASE_URL}/ai/generate-solutions/${ticketId}`, {
+      return apiCall(`${API_BASE_URL}/ai/generate-solutions/${ticketId}`, {
         method: 'POST',
       });
-      return response.json();
     },
 
     previewSolutions: async (description: string, title?: string): Promise<ApiResponse<any>> => {
-      const response = await fetch(`${API_BASE_URL}/ai/preview-solutions`, {
+      return apiCall(`${API_BASE_URL}/ai/preview-solutions`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ description, title }),
       });
-      return response.json();
     },
   },
 };
