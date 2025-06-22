@@ -1,38 +1,55 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
-import { useLogin } from '@/hooks/useStock';
+import { LogIn, User, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
   const navigate = useNavigate();
-  const loginMutation = useLogin();
+  const location = useLocation();
+  const { login } = useAuth();
+
+  // Récupérer la page de destination depuis l'état de navigation
+  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setIsLoading(true);
     
     try {
-      const result = await loginMutation.mutateAsync({ email, password });
+      const success = await login(email, password);
       
-      if (result.success && result.data) {
-        const user = result.data.user;
+      if (success) {
+        toast.success('Connexion réussie !');
         
-        // Rediriger selon le rôle
-        if (user.role === 'admin') {
+        // Rediriger selon le rôle ou vers la page demandée
+        if (email === 'admin@example.com') {
           navigate('/stock/dashboard');
         } else {
-          navigate('/'); // Module tickets pour les utilisateurs normaux
+          navigate(from === '/login' ? '/' : from);
         }
+      } else {
+        setError('Email ou mot de passe incorrect');
+        toast.error('Erreur de connexion');
       }
     } catch (error) {
       console.error('Erreur de connexion:', error);
+      setError('Une erreur est survenue lors de la connexion');
+      toast.error('Erreur de connexion');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,32 +113,33 @@ export const Login = () => {
               </div>
             </div>
             
+            {error && (
+              <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-md">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+            
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={loginMutation.isPending}
+              disabled={isLoading}
             >
-              {loginMutation.isPending ? 'Connexion...' : 'Se connecter'}
+              {isLoading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </form>
           
           <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Comptes de démonstration :</p>
-            <p className="mt-1">
-              <strong>Admin :</strong> admin@example.com / admin123
-            </p>
-            <p>
-              <strong>Utilisateur :</strong> user@example.com / user123
-            </p>
-          </div>
-          
-          {loginMutation.error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-600">
-                Erreur de connexion. Vérifiez que le serveur backend est démarré sur le port 5000.
+            <p className="font-medium mb-2">Comptes de démonstration :</p>
+            <div className="space-y-1">
+              <p>
+                <strong>Admin :</strong> admin@example.com / admin123
+              </p>
+              <p>
+                <strong>Utilisateur :</strong> user@example.com / user123
               </p>
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
     </div>
