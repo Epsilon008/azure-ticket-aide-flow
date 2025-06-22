@@ -1,5 +1,6 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stockApi } from '@/services/stockApi';
+import { api } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
 // Dashboard hooks
@@ -9,7 +10,7 @@ export const useDashboardStats = () => {
     queryFn: async () => {
       console.log('🔍 Tentative de récupération des stats dashboard...');
       try {
-        const result = await stockApi.dashboard.getStats();
+        const result = await api.stock.getDashboardStats();
         console.log('✅ Stats dashboard récupérées:', result);
         return result;
       } catch (error) {
@@ -27,7 +28,7 @@ export const useEmployees = () => {
     queryFn: async () => {
       console.log('🔍 Tentative de récupération des employés...');
       try {
-        const result = await stockApi.employees.getAll();
+        const result = await api.employees.getAll();
         console.log('✅ Employés récupérés:', result);
         return result;
       } catch (error) {
@@ -43,7 +44,7 @@ export const useCreateEmployee = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: stockApi.employees.create,
+    mutationFn: api.employees.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast({
@@ -67,7 +68,7 @@ export const useUpdateEmployee = () => {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => 
-      stockApi.employees.update(id, data),
+      api.employees.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast({
@@ -90,7 +91,7 @@ export const useDeleteEmployee = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: stockApi.employees.delete,
+    mutationFn: api.employees.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast({
@@ -115,7 +116,7 @@ export const useEquipments = (filters?: any) => {
     queryFn: async () => {
       console.log('🔍 Tentative de récupération des équipements...');
       try {
-        const result = await stockApi.stock.getEquipments(filters);
+        const result = await api.stock.getEquipments(filters);
         console.log('✅ Équipements récupérés:', result);
         return result;
       } catch (error) {
@@ -131,7 +132,7 @@ export const useCreateEquipment = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: stockApi.stock.createEquipment,
+    mutationFn: api.stock.createEquipment,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['equipments'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
@@ -157,7 +158,7 @@ export const useCategories = () => {
     queryFn: async () => {
       console.log('🔍 Tentative de récupération des catégories...');
       try {
-        const result = await stockApi.stock.getCategories();
+        const result = await api.stock.getCategories();
         console.log('✅ Catégories récupérées:', result);
         return result;
       } catch (error) {
@@ -173,7 +174,7 @@ export const useCreateCategory = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: stockApi.stock.createCategory,
+    mutationFn: api.stock.createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({
@@ -198,7 +199,7 @@ export const useAssignmentHistory = () => {
     queryFn: async () => {
       console.log('🔍 Tentative de récupération de l\'historique...');
       try {
-        const result = await stockApi.stock.getAssignmentHistory();
+        const result = await api.stock.getAssignmentHistory();
         console.log('✅ Historique récupéré:', result);
         return result;
       } catch (error) {
@@ -209,13 +210,40 @@ export const useAssignmentHistory = () => {
   });
 };
 
+// Assignment d'équipement
+export const useAssignEquipment = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: api.employees.assignEquipment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['equipments'] });
+      queryClient.invalidateQueries({ queryKey: ['assignment-history'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast({
+        title: 'Succès',
+        description: 'Équipement attribué avec succès',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de l\'attribution de l\'équipement',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
 // Authentication
 export const useLogin = () => {
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
-      stockApi.auth.login(email, password),
+      api.auth.login(email, password),
     onSuccess: (data) => {
       if (data.success && data.data) {
         localStorage.setItem('token', data.data.token);
