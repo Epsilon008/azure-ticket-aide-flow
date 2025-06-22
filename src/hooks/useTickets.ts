@@ -70,6 +70,29 @@ export const useUpdateTicket = () => {
   });
 };
 
+export const useDeleteTicket = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: api.tickets.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast({
+        title: 'Succès',
+        description: 'Ticket supprimé avec succès',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Erreur',
+        description: 'Erreur lors de la suppression du ticket',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
 export const useGenerateAISolutions = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

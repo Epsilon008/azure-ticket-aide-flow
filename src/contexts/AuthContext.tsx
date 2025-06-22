@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/types/stock';
+import { api } from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -20,26 +21,6 @@ export const useAuth = () => {
   }
   return context;
 };
-
-// Données fictives pour la démonstration
-const mockUsers = [
-  {
-    id: '1',
-    username: 'Admin',
-    email: 'admin@example.com',
-    password: 'admin123',
-    role: 'admin' as const,
-    department: 'IT'
-  },
-  {
-    id: '2',
-    username: 'Utilisateur',
-    email: 'user@example.com',
-    password: 'user123',
-    role: 'user' as const,
-    department: 'Support'
-  }
-];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -65,28 +46,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     console.log('🔐 Tentative de connexion pour:', email);
     
-    // Simuler un délai de connexion
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const foundUser = mockUsers.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      const userWithoutPassword = {
-        id: foundUser.id,
-        username: foundUser.username,
-        email: foundUser.email,
-        role: foundUser.role,
-        department: foundUser.department
-      };
+    try {
+      const response = await api.auth.login(email, password);
       
-      setUser(userWithoutPassword);
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      localStorage.setItem('token', `mock-token-${foundUser.id}`);
-      
-      console.log('✅ Connexion réussie pour:', foundUser.email, 'Rôle:', foundUser.role);
-      return true;
-    } else {
-      console.log('❌ Échec de la connexion pour:', email);
+      if (response.success && response.data) {
+        const { user: userData, token } = response.data;
+        
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', token);
+        
+        console.log('✅ Connexion réussie pour:', userData.email, 'Rôle:', userData.role);
+        return true;
+      } else {
+        console.log('❌ Échec de la connexion pour:', email);
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la connexion:', error);
       return false;
     }
   };
