@@ -1,7 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/types/stock';
-import { api } from '@/services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -20,6 +19,24 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+// Données fictives pour l'authentification temporaire
+const MOCK_USERS = {
+  'admin@example.com': {
+    id: '1',
+    email: 'admin@example.com',
+    name: 'Administrateur',
+    role: 'admin' as const,
+    password: 'admin123'
+  },
+  'user@example.com': {
+    id: '2',
+    email: 'user@example.com',
+    name: 'Utilisateur',
+    role: 'user' as const,
+    password: 'user123'
+  }
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -46,24 +63,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     console.log('🔐 Tentative de connexion pour:', email);
     
-    try {
-      const response = await api.auth.login(email, password);
+    // Authentification avec données fictives
+    const mockUser = MOCK_USERS[email as keyof typeof MOCK_USERS];
+    
+    if (mockUser && mockUser.password === password) {
+      const userData: User = {
+        id: mockUser.id,
+        email: mockUser.email,
+        name: mockUser.name,
+        role: mockUser.role
+      };
       
-      if (response.success && response.data) {
-        const { user: userData, token } = response.data;
-        
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
-        
-        console.log('✅ Connexion réussie pour:', userData.email, 'Rôle:', userData.role);
-        return true;
-      } else {
-        console.log('❌ Échec de la connexion pour:', email);
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors de la connexion:', error);
+      const mockToken = `mock-token-${Date.now()}`;
+      
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', mockToken);
+      
+      console.log('✅ Connexion réussie pour:', userData.email, 'Rôle:', userData.role);
+      return true;
+    } else {
+      console.log('❌ Échec de la connexion pour:', email);
       return false;
     }
   };
